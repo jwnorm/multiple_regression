@@ -10,5 +10,5 @@ The remainder of the Quarto document is an end-to-end data science problem that 
 
 - Exploratory data analysis
 - Model fitting
-- Model Diagnostics
-- Performance Assessment
+- Model diagnostics
+- Performance assessment

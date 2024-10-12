@@ -9,7 +9,7 @@ editor: visual
 **Jacob Norman\
 2024-10-04**
 
-This is the second assignment for the course *ISE537: Statistical Models for Systems Analytics in Industrial Engineering*. The topic of this assignment is on multiple linear regression, including:
+This is the second assignment for the course *ISE537: Statistical Models for Systems Analytics in Industrial Engineering*. The topic of this assignment is multiple linear regression, including:
 
 -   Concepts
 
@@ -29,11 +29,11 @@ It was great getting back into using `R` in the previous assignment. I am hoping
 
 This section covers the true or false questions concerning multiple linear regression.
 
-| Q1  | Q2  | Q3  | Q4  | Q5  | Q6  | Q7  |
-|-----|-----|-----|-----|-----|-----|-----|
-| F\* | T   | T   | F   | T   | F   | T   |
-| Q8  | Q9  | Q10 | Q11 | Q12 | Q13 | Q14 |
-| F   | T   | F   | F\* | T   | T   | F   |
+| Q1     | Q2     | Q3      | Q4      | Q5      | Q6      | Q7      |
+|--------|--------|---------|---------|---------|---------|---------|
+| F      | T      | T       | F       | T       | F       | T       |
+| **Q8** | **Q9** | **Q10** | **Q11** | **Q12** | **Q13** | **Q14** |
+| F      | F      | F       | F       | T       | T       | F       |
 
 ### Fram
 
@@ -80,9 +80,10 @@ There are **three** regression coefficients that are significant at the $\alpha=
 
 ```{r}
 last_resid <- tail(model_overall$residuals, 1)
+last_resid
 ```
 
-The value of the residual associated with the last observation of the data set is `r last_resid`.
+The value of the residual associated with the last observation of the data set is **`r round(last_resid, 3)`**.
 
 #### Q17
 
@@ -92,9 +93,10 @@ An interpretation of the estimated regression coefficient for `BMI` is: systolic
 
 ```{r}
 overall_sigma2 <- summary(model_overall)$sigma^2
+overall_sigma2
 ```
 
-An approximate estimated variance of the error terms is `r overall_sigma2`.
+The approximate estimated variance of the error terms is **`r round(overall_sigma2, 2)`**.
 
 #### Q19
 
@@ -113,7 +115,7 @@ model_obese <- lm(SYSBP ~ ., fram_obese)
 summary(model_obese)
 ```
 
-When running the same model using the subset of rows with a `BMI` ≥ 30, there are zero regression coefficients that are significant at the 0.01 significance level.
+When running the same model using the subset of rows with a `BMI` ≥ 30, there are **zero** regression coefficients that are significant at the $\alpha=0.01$ significance level.
 
 #### Q20
 
@@ -123,19 +125,27 @@ Let's compare the variance and $R^2$ between the two models we have created:
 overall_r2 <- summary(model_overall)$r.squared
 obese_r2 <- summary(model_obese)$r.squared
 obese_sigma2 <- summary(model_obese)$sigma^2
+
+# store results as tibble
+fram_summary <- tibble("Model" = c("model_overall", "model_obese"),
+                       "R2" = c(overall_r2, obese_r2),
+                       "Variance" = c(overall_sigma2, obese_sigma2))
+fram_summary
 ```
 
-The amount of variability explained by the predictors is lower in the obese population compared to the overall population. This is because the $R^2$ for the obese model is `r obese_r2` whereas the $R^2$ for the full model is `r overall_r2`.
+The amount of variability explained by the predictors is lower in the obese population compared to the overall population. This is because the $R^2$ for the obese model is `r round(obese_r2, 3)` whereas the $R^2$ for the full model is `r round(overall_r2, 3)`.
 
-Additionally, the estimated variance of the error terms under the model for the overall population, `r overall_sigma2`,is lower than the estimated variance under the model for the obese population only, `r obese_sigma2`.
+Additionally, the estimated variance of the error terms under the model for the overall population, `r round(overall_sigma2, 2)`, is lower than the estimated variance under the model for the obese population only, `r round(obese_sigma2, 2)`.
+
+In the context of this question, the answer is **all of the above**.
 
 ### True/False (cont.)
 
 This section covers the remaining true or false questions concerning multiple linear regression.
 
-| Q21 | Q22 | Q23 | Q24 | Q25 | Q26 | Q27 |
-|-----|-----|-----|-----|-----|-----|-----|
-| T\* | T   | T   | F   | F   | F   | T\* |
+| **Q21** | **Q22** | **Q23** | **Q24** | **Q25** | **Q26** | **Q27** |
+|---------|---------|---------|---------|---------|---------|---------|
+| F       | T       | T       | F       | F       | F       | T       |
 
 ## Problem 2
 
@@ -158,7 +168,13 @@ This next section concerns working through a multiple linear regression problem 
 To begin, let's read in our data, careful to ensure that `Species` is a factor.
 
 ```{r}
+# read csv as tibble
 fish <- read_csv("data/Fish.csv", col_types = "dfddddd")
+
+# ensure first level is Pike
+fish$Species <- relevel(fish$Species, "Pike")
+
+# display statistical summary of cols
 summary(fish)
 ```
 
@@ -205,7 +221,7 @@ ggplot(fish_train, aes(`Body Height`, Weight)) +
   labs(title="Relationship Between Weight and Body Height")
 ```
 
-Visually, the relationship between `Weight` and `Body Height` appears approximately linear; as `Body Height` increases, so does `Weight`. It is possible that there could be a a higher order relationship since `Weight` increases at a faster rate than `Body Height`. In fact, the relationship seems to split around $x=30$, with the lower string of points appearing more linear than the upper ones. This should be investigated further when looking at model diagnostics.
+Visually, the relationship between `Weight` and `Body Height` appears approximately linear; as `Body Height` increases, so does `Weight`. It is possible that there could be a higher order relationship since `Weight` increases at a faster rate than `Body Height`. In fact, the relationship seems to split around $x=30$, with the lower string of points appearing more linear than the upper ones. This should be investigated further when looking at model diagnostics.
 
 There is a single obvious outlier, near the point $(x, y)=(18, 1700)$. Could this be the *Roach* outlier we noticed earlier? Since $x=18$ is near the mean of the predictors, it likely will not have strong leverage.
 
@@ -217,7 +233,7 @@ ggplot(fish_train, aes(`Total Length`, Weight, alpha=0.5)) +
   theme(legend.position = "none")
 ```
 
-Similar to `Body Height`, the relationship between `Weight` and `Total Length` appears approximately linear; as `Total Length` increases, so does `Weight`. In fact, there is likely a very strong correlation between `Total Length` and `Body Height` since both plots almost identical.
+Similar to `Body Height`, the relationship between `Weight` and `Total Length` appears approximately linear; as `Total Length` increases, so does `Weight`. In fact, there is likely a very strong correlation between `Total Length` and `Body Height` since both plots are almost identical.
 
 Again, it looks like there could be some sort of higher order relationship between these two variables. This should be investigated further when looking at model diagnostics. I wonder if the `Species` of fish will help explain the presence of two seemingly different trends.
 
@@ -239,9 +255,9 @@ ggplot(fish_train, aes(Height, Weight)) +
   labs(title="Relationship Between Weight and Height")
 ```
 
-The relationship between `Height` and `Weight` is again appears to have multiple relationships, one that is more linear and another that is higher order. Overall, the relationship appears approximately linear, but we can confirm later.
+The relationship between `Height` and `Weight` again appears to have multiple relationships, one that is more linear and another that is higher order. Overall, the relationship appears approximately linear with a positive slope, but we can confirm later.
 
-There are several points around the center of the `Height` axis with `Weight` values above 1,500, which might be outlier points. Again, since they are near the mean of the predictor, this will likely not have strong leverage.
+There are several points around the center of the `Height` axis with `Weight` values above 1,500, which might be outlier points. Since they are near the mean of this predictor, this they might not have strong leverage.
 
 ```{r}
 ggplot(fish_train, aes(Width, Weight)) +
@@ -250,9 +266,9 @@ ggplot(fish_train, aes(Width, Weight)) +
   labs(title="Relationship Between Weight and Width")
 ```
 
-The relationship between `Width` and `Weight` is different than what we have observed with the other predictors. This relationship looks the most linear, with a positive trend. We also note that since the `Width` , as well as the other quantitative predictors, cannot go below zero, it could be clue that some sort of transformation is necessary.
+The relationship between `Width` and `Weight` is different than what we have observed with the other predictors. This relationship looks the most linear, with a positive trend. We also note that since the `Width` , as well as the other quantitative predictors, cannot go below zero, it could be a clue that some sort of transformation is necessary.
 
-There are several points with `Weight` values above 1,500, which might be outlier points. The point that is near the center of the $x$ data probably has low leverage, but the others could have high leverage.
+There are several points with `Weight` values above 1,500, which might be outlier points. The point that is near the center of the $x$ data probably has lower leverage, but the others could have higher leverage.
 
 Let us now investigate the correlations of all quantitative variables in our `tibble`, `fish_train`:
 
@@ -264,17 +280,13 @@ fish_train %>%
 
 We can see that all but one predictor have strong, positive correlations with `Weight`, meaning they all have correlation coefficients over 0.8. Only the predictor `Height` has a moderate correlation with `Weight`, with a coefficient of 0.688.
 
-As we suspected earlier, some of the predictors are highly correlated with one another: `Body Height`, `Total Length`, and `Diagonal Length`. Intuitively, this makes sense because these all sound like they are capturing the same information. We probably do not need to include all of these in our model in order to avoid multicolinearity.
+As we suspected earlier, some of the predictors are highly correlated with one another: `Body Height`, `Total Length`, and `Diagonal Length`. Intuitively, this makes sense because these all sound like they are capturing the same information. We should not include all of these in our model in order to avoid multicolinearity.
 
-Based on the entirely of our exploratory data analysis, it is reasonable to assume that the relationship between `Weight` and the predictors can be modeled using multiple linear regression. We just need to watch out for multicolinearity and potential higher order relationships when assessing model diagnostics and act appropriately.
+Based on the entirely of our exploratory data analysis, it is reasonable to assume that the relationship between `Weight` and the predictors can be modeled using multiple linear regression. We just need to watch out for multicolinearity and potential higher order relationships when assessing model diagnostics and take corrective action when necessary.
 
 ### 2. Fitting the Multiple Linear Regression Model
 
 We will now train our linear regression model to predict `Weight` based on all other variables in `fish_train`. This will be our base model that we will adjust based on diagnostic information.
-
-```{r}
-fish_train$Species
-```
 
 ```{r}
 model1 <- lm(Weight ~ ., fish_train)
@@ -283,11 +295,11 @@ summary(model1)
 
 Some observations from this initial model:
 
--   The overall regression is significant at an $\alpha=0.01$ level, as the $p-value$ is near zero.
+-   The overall regression is significant at an $\alpha=0.01$ level, as the p-value is near zero.
 
--   The estimated coefficient for `Body Height` is -176.87, which means that the weight of a fish decreases by 176.87 grams for each 1 centimeter increase in body height, all other predictor variables constant. This seems very counter-intuitive as bigger size generally means heavier weight. Likely, this is compensating for the estimated coefficients of other size variables, like `Total Length`, which is positive.
+-   The estimated coefficient for `Body Height` is -176.87, which means that the weight of a fish decreases by 176.87 grams for each 1 centimeter increase in body height, all other predictor variables constant. This seems very counterintuitive as bigger size generally means heavier weight. Likely, this is compensating for the estimated coefficients of other size variables, like `Total Length`, which is positive.
 
--   The estimated coefficient for `SpeciesParkki` is 62.585, which means that the weight of a fish increases by 62.585 grams if it is a *Parrki* instead of a *Pike*, all other predictors held constant. Of course, this is dependent on whatever the model considers the "base" fish, which in this case is *Pike*.
+-   The estimated coefficient for `SpeciesParkki` is 62.585, which means that the weight of a fish increases by 62.585 grams if it is a *Parkki* instead of a *Pike*, all other predictors held constant. Of course, this is dependent on whatever the model considers the "base" fish, which in this case is *Pike*.
 
 ### 3. Checking for Outliers
 
@@ -311,7 +323,7 @@ There is one outlier, which could very well be the one we have been fixated on t
 fish_train[outlier,]
 ```
 
-This is indeed the outlier we noted for a *Roach* fish with a weight of 1,700. what row does this correspond to:
+This is indeed the outlier we noted for a *Roach* fish with a weight of 1,700 grams. What row does this correspond to?
 
 ```{r}
 which(outlier)
@@ -322,13 +334,13 @@ Let's create a new `tibble` and model that have row 30 removed from the data:
 ```{r}
 fish_no_outliers <- fish_train %>%
                       filter(!outlier)
-model2 <- lm(Weight ~ ., data = fish_no_outliers)
+model2 <- lm(Weight ~ ., fish_no_outliers)
 summary(model2)
 ```
 
 ### 4. Checking Model Assumptions
 
-We must now validate the residuals our new model, `model2`, against several key assumptions:
+We must now validate the residuals of our new model, `model2`, against several key assumptions:
 
 -   Linearity
 
@@ -336,14 +348,14 @@ We must now validate the residuals our new model, `model2`, against several key 
 
 -   Normality
 
-We will start by computing the standardizing residuals and creating a new column in `fish_no_outliers` .
+We will start by computing the standardized residuals and creating a new column in `fish_no_outliers` .
 
 ```{r}
 std_resid2 <- rstandard(model2)
-fish_no_outliers$`Standardized Residual` <- std_resid2
+fish_no_outliers$std_resid2 <- std_resid2
 ```
 
-To assess the linearity assumption, let's plot these standardized residuals against each of the quantitative predictors. To make it easy to see all at once, let's display them on the same chart. First some
+To assess the linearity assumption, let's plot these standardized residuals against each of the quantitative predictors. To make it easy to see all at once, let's display them on the same chart.
 
 ```{r}
 # list of quantitiative predictors
@@ -359,12 +371,12 @@ fish_melted <- fish_no_outliers %>%
 
 # create plot
 ggplot(fish_melted) +
-  geom_point(aes(Value, `Standardized Residual`), alpha=0.5) + 
+  geom_point(aes(Value, std_resid2), alpha=0.5) + 
   facet_wrap(~ Measure) +
   labs(title = "Linearity: model2")
 ```
 
-There is curvature present the `Body Height`, `Diagonal Length`, and `Total Length` plots, which is evidence that the linearity assunmption does not hold. It is difficult to tell with `Width` and `Height` since they are on a different scale, so we look at those separately:
+There is curvature present in the `Body Height`, `Diagonal Length`, and `Total Length` plots, which is evidence that the linearity assumption does not hold. It is difficult to tell with `Width` and `Height` since they are on a different scale, so we look at those separately:
 
 ```{r}
 ggplot(fish_no_outliers) +
@@ -387,7 +399,7 @@ ggplot() +
        x = "Fitted Value", y = "Standardized Residual")
 ```
 
-The same curvature appears in the plot of of fitted values versus standardized residuals, again indicating that the relationship is not linear. Beyond, that the variance does not appear to be constant. It is a little difficult to see, but it looks like variance increases as $\hat{y_i}$ does, creating a funnel shape. Therefore, the constant variance assumption is also violated.
+The same curvature appears in the plot of of fitted values versus standardized residuals, again indicating that the relationship is not linear. Beyond that, the variance does not appear to be constant. It is a little difficult to see, but it looks like variance increases as $\hat{y_i}$ does, creating a funnel shape. Therefore, the constant variance assumption is also violated.
 
 We move on to the normality check:
 
@@ -403,7 +415,7 @@ Looking at the above distribution, the standardized residuals appear somewhat no
 ```{r}
 ggplot(mapping = aes(sample = std_resid2)) +
   stat_qq(alpha = 0.5) +
-  stat_qq_line(color = "blue", size = 1.1) +
+  stat_qq_line(color = "blue", linewidth = 1.1) +
   labs(title = "QQ-Plot: model2", x = "Theoretical", y = "Sample")
 ```
 
@@ -415,7 +427,7 @@ Let us now create a reduced model, `model3`, that will only consider `Species` a
 
 ```{r}
 model3 <- lm(Weight ~ Species + `Total Length`, 
-             data = fish_no_outliers)
+             fish_no_outliers)
 summary(model3)
 ```
 
@@ -425,7 +437,7 @@ To assess if the extra predictors in the full model, `model2`, are significantly
 anova(model2, model3)
 ```
 
-Based on a significance level of $\alpha=0.01$, we fail to reject the null hypothesis that the additional predictors in the full model have regression coefficients different from zero. In other words, we can conclude that these predictors can be removed from the model with no loss of explainability, leaving us with the reduced model, `model3`.
+Based on a significance level of $\alpha=0.01$, we fail to reject the null hypothesis that the additional predictors in the full model have regression coefficients equal to zero. In other words, we can conclude that these predictors can be removed from the model with no loss of explainability, leaving us with the reduced model, `model3`.
 
 This makes sense because we noticed earlier during exploratory data analysis that there was significant multicolinearity present among several of the predictor variables.
 
@@ -442,11 +454,11 @@ There is only one quantitative predictor, `Total Length`, so this is the only ch
 
 ```{r}
 ggplot(fish_no_outliers) +
-  geom_point(aes(Height, std_resid3), alpha=0.5) +
+  geom_point(aes(`Total Length`, std_resid3), alpha=0.5) +
   labs(title = "Linearity: model3", y = "Standardized Residual")
 ```
 
-As we noted with the full model, this relationship has some curvature to it, suggesting that a transformation may be needed in order to satisfy the linearity assumption.
+As we noted with the full model, this relationship has some curvature to it, suggesting that a transformation may be needed in order to satisfy the linearity assumption. The linearity assumption still does not hold.
 
 ```{r}
 ggplot() +
@@ -469,30 +481,35 @@ The standardized residuals for the reduced model definitely appear more normal t
 ```{r}
 ggplot(mapping = aes(sample = std_resid3)) +
   stat_qq(alpha = 0.5) +
-  stat_qq_line(color = "blue", size = 1.1) +
+  stat_qq_line(color = "blue", linewidth = 1.1) +
   labs(title = "QQ-Plot: model3", x = "Theoretical", y = "Sample")
 ```
 
-The above QQ-plot confirms that the normality assumption, while still violated, is much better when compared against the full model. We might be able to say that the standardized residuals are approximately normally distributed.
+The above QQ-plot confirms that the normality assumption, while still violated, is much better when compared against the full model.
 
 ### 7. Transformation
 
-During diagnostics of `model2`, we noted that we need to address the nonlinear relationship present in the data. To do these, we will perform a Box-Cox transformation. First, we need to find the optimal $\lambda$:
+During diagnostics of `model2`, we noted that we need to address the nonlinear relationship present in the data. To do this, we will perform a Box-Cox transformation. First, we need to find the optimal $\lambda$:
 
 ```{r}
 bc <- MASS::boxcox(model3)
+```
+
+```{r}
 lambda <- as_tibble(bc) %>%
             slice_max(y)%>%
             pull(x)
+lambda
 ```
 
-The optimal lambda is `r lambda`, but will will round this to the nearest 0.5 by convention:
+The optimal lambda is `r round(lambda, 3)`, but we will round this to the nearest 0.5 by convention:
 
 ```{r}
 rounded_lambda <- round(lambda * 2) / 2
+rounded_lambda
 ```
 
-This new $\lambda$ suggests that need to take the square root of our response variable. We will create a new column, `tWeight`, to capture this transformation.
+This new $\lambda$ suggests that we need to take the square root of our response variable. We will create a new column, `tWeight`, to capture this transformation.
 
 ```{r}
 fish_no_outliers$tWeight <- fish_no_outliers$Weight^rounded_lambda
@@ -501,7 +518,8 @@ fish_no_outliers$tWeight <- fish_no_outliers$Weight^rounded_lambda
 Let's create a new model, `model4`, that has `tWeight` as the response variable.
 
 ```{r}
-model4 <- lm(tWeight ~ Species + `Total Length`, fish_no_outliers)
+model4 <- lm(tWeight ~ Species + `Total Length`, 
+             fish_no_outliers)
 summary(model4)
 ```
 
@@ -516,7 +534,7 @@ Now, the linearity assumption:
 
 ```{r}
 ggplot(fish_no_outliers) +
-  geom_point(aes(Height, std_resid4), alpha=0.5) +
+  geom_point(aes(`Total Length`, std_resid4), alpha=0.5) +
   labs(title = "Linearity: model4", y = "Standardized Residual")
 ```
 
@@ -529,7 +547,7 @@ ggplot() +
        x = "Fitted Value", y = "Standardized Residual")
 ```
 
-Similarly, this residual plot against the fitted values looks randomly distributed, suggesting that the constant variance assumption holds for the transformed model.
+Similarly, this residual plot against the fitted values looks randomly distributed around zero, suggesting that the constant variance assumption holds for the transformed model.
 
 ```{r}
 ggplot() +
@@ -543,11 +561,11 @@ The distribution of standardized residuals looks the most normal we have seen so
 ```{r}
 ggplot(mapping = aes(sample = std_resid4)) +
   stat_qq(alpha = 0.5) +
-  stat_qq_line(color = "blue", size = 1.1) +
+  stat_qq_line(color = "blue", linewidth = 1.1) +
   labs(title = "QQ-Plot: model4", x = "Theoretical", y = "Sample")
 ```
 
-The QQ-plot confirms what we observed with the histogram. If only looking at the theoretical quantiles between -2 and +2, the standardized residuals appear fairly normal. The larger residuals in both tails outside this range that deviate from the line we are looking for. I think we can say the the standardized residuals for the transformed model are normally distributed.
+The QQ-plot confirms what we observed with the histogram. If only looking at the theoretical quantiles between -2 and +2, the standardized residuals appear fairly normal. The larger residuals in both tails outside this range deviate from the line we are looking for. I think we can say the the standardized residuals for the transformed model are normally distributed.
 
 Overall, the Box-Cox transformation was successful in correcting the deficiencies in model assumptions.
 
@@ -586,9 +604,9 @@ model_results
 
 Starting with the initial model, `model1`, we can see that over 80 percent of the variability in `Weight` is being explained. Moving to `model2`, removing that single outlier point had a significant impact on both the $R^2$ and $Adj. R^2$, increasing each by almost 0.1. This is a very strong fit.
 
-As we saw in partial F-test, there is almost no difference between the reduced `model3` and the full `model2`. This is due to the presence of several predictors in the full model that are highly correlated with each other. We note that the $R^2$ is slightly higher for `model2` compared to `model3`; this is because there will always be more variance explained with more information. However, when looking at the $Adj. R^2$, which controls for the number of predictors in the model, it is also slightly lower for the reduced model. I expected to see a higher $Adj. R^2$ for `model3` because of this.
+As we saw with the partial F-test, there is almost no difference between the reduced `model3` and the full `model2`. This is due to the presence of several predictors in the full model that are highly correlated with each other. We note that the $R^2$ is slightly higher for `model2` compared to `model3`; this is because there will always be more variance explained with more information. However, when looking at the $Adj. R^2$, which controls for the number of predictors in the model, it is also slightly lower for the reduced model. I expected to see a higher $Adj. R^2$ for `model3` because of this.
 
-Moving to the transformed model, `model4`, we see that taking the square root of the response variable resulted in a significant improvement in both $R^2$ and $Adj. R^2$, meaning that over 98 percent of the variability in `tWeight` is explained by only `Species` and `Total Length`.
+Moving to the transformed model, `model4`, we see that taking the square root of the response variable resulted in a significant improvement in both $R^2$ and $Adj. R^2$. Over 98 percent of the variability in `tWeight` is explained by only `Species` and `Total Length`.
 
 It is interesting that with each iteration, the fit of the model improved or stayed roughly the same. We were also able to explain much of the variance in `Weight` and `tWeight`.
 
@@ -607,9 +625,9 @@ fish_test %>%
   
 ```
 
-Overall, there are a few predictions for `model3` that are fairly close to the true observed `Weight`, but also some values with large residuals. Additionally, there are actually negative predicted values for `Weight`. This is obviously impossible since the lower bound on a fish's weight is zero.
+Overall, there are a few predictions for `model3` that are fairly close to the true observed `Weight`, but also some values with large residuals. Additionally, there are actually negative predicted values for `Weight`. This is obviously impossible since the lower bound on the weight of a fish is zero.
 
-When looking at `model4`'s predictions, they are much closer to the true observed `Weight`. Here there are no negative predictions, which is the result of our Box-Cox transformation of the response variable. This model has the higher $R^2$, but also appears to be much better at predicting as well. Let's confirm by calculating and comparing **M**ean **S**quared **P**rediction **E**rror (MSPE):
+When looking at the predictions of `model4`, they are much closer to the true observed `Weight`. Here there are no negative predictions, which is the result of our Box-Cox transformation of the response variable. This model has the higher $R^2$, but also appears to be much better at predicting as well. Let's confirm by calculating and comparing **M**ean **S**quared **P**rediction **E**rror (MSPE):
 
 ```{r}
 # calculate mean squared prediction error
@@ -636,11 +654,11 @@ Since `model4` does not consider `Body Height` as a predictor, we can exclude th
 
 ```{r}
 single_perch <- tibble(Species = "Perch", 
-                   `Total Length` = 32)
+                       `Total Length` = 32)
 predict(model4, 
         single_perch, 
         interval = "p", 
         level = 0.9)^2
 ```
 
-Suppose we catch a fish in the future and it is a perch with the above traits, then we are 90 percent confident that its weight will fall between 374.45 and 558.61 grams.
+Suppose we catch a fish in the future and it is a *Perch* with the above traits, then we are 90 percent confident that its weight will fall between 374.45 and 558.61 grams.
